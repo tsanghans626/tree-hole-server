@@ -1,6 +1,8 @@
 spring:
   application:
     name: "treeholeserver"
+  profiles:
+    active: dev
   datasource:
     url: "jdbc:postgresql://localhost:5432/treehole"
     username: "treehole"
@@ -23,3 +25,7 @@ spring:
         options:
           model: "hunyuan-2.0-instruct-20251111"
           temperature: 0.7
+
+jwt:
+  secret: "tree-hole-server-secret-key-change-in-production-256bits"
+  expiration: 86400000  # 24 hours (in milliseconds)
