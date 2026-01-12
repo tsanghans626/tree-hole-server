@@ -9,8 +9,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.lwznkj.treeholeserver.module.auth.context.UserContext;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/agents")
 public class AgentController {
@@ -23,6 +26,9 @@ public class AgentController {
 
     @PostMapping("/chat")
     public R<AgentChatResp> chat(@RequestBody AgentChatReq req) {
+        Long userId = UserContext.getCurrentUserId();
+        String username = UserContext.getCurrentUsername();
+        log.info("Chat request from user - userId: {}, username: {}", userId, username);
         return R.ok(agentService.chat(req));
     }
 
