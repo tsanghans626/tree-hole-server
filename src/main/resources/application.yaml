@@ -29,3 +29,9 @@ spring:
 jwt:
   secret: "tree-hole-server-secret-key-change-in-production-256bits"
   expiration: 86400000  # 24 hours (in milliseconds)
+
+# Authentication white list configuration
+auth:
+  white-list:
+    paths:
+      - /api/v1/auth/**
