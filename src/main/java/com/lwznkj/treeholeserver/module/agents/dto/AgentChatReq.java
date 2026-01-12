@@ -1,4 +1,4 @@
-package com.lwznkj.treeholeserver.module.agent.dto;
+package com.lwznkj.treeholeserver.module.agents.dto;
 
 import lombok.Data;
 

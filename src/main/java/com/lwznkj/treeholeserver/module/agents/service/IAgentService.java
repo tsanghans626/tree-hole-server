@@ -1,7 +1,7 @@
-package com.lwznkj.treeholeserver.module.agent.service;
+package com.lwznkj.treeholeserver.module.agents.service;
 
-import com.lwznkj.treeholeserver.module.agent.dto.AgentChatReq;
-import com.lwznkj.treeholeserver.module.agent.dto.AgentChatResp;
+import com.lwznkj.treeholeserver.module.agents.dto.AgentChatReq;
+import com.lwznkj.treeholeserver.module.agents.dto.AgentChatResp;
 import reactor.core.publisher.Flux;
 
 public interface IAgentService {

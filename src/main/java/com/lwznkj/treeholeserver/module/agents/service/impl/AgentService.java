@@ -1,8 +1,8 @@
-package com.lwznkj.treeholeserver.module.agent.service.impl;
+package com.lwznkj.treeholeserver.module.agents.service.impl;
 
-import com.lwznkj.treeholeserver.module.agent.dto.AgentChatReq;
-import com.lwznkj.treeholeserver.module.agent.dto.AgentChatResp;
-import com.lwznkj.treeholeserver.module.agent.service.IAgentService;
+import com.lwznkj.treeholeserver.module.agents.dto.AgentChatReq;
+import com.lwznkj.treeholeserver.module.agents.dto.AgentChatResp;
+import com.lwznkj.treeholeserver.module.agents.service.IAgentService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;

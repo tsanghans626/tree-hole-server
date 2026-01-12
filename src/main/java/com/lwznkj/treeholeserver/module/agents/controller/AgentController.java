@@ -1,9 +1,9 @@
-package com.lwznkj.treeholeserver.module.agent.controller;
+package com.lwznkj.treeholeserver.module.agents.controller;
 
 import com.lwznkj.treeholeserver.common.dto.R;
-import com.lwznkj.treeholeserver.module.agent.dto.AgentChatReq;
-import com.lwznkj.treeholeserver.module.agent.dto.AgentChatResp;
-import com.lwznkj.treeholeserver.module.agent.service.IAgentService;
+import com.lwznkj.treeholeserver.module.agents.dto.AgentChatReq;
+import com.lwznkj.treeholeserver.module.agents.dto.AgentChatResp;
+import com.lwznkj.treeholeserver.module.agents.service.IAgentService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
