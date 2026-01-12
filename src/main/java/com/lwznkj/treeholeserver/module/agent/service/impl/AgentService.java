@@ -5,11 +5,13 @@ import com.lwznkj.treeholeserver.module.agent.dto.AgentChatResp;
 import com.lwznkj.treeholeserver.module.agent.service.IAgentService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
 @Service
 public class AgentService implements IAgentService {
 
     private final ChatClient chatClient;
+
 
     public AgentService(ChatClient.Builder chatClientBuilder) {
         this.chatClient = chatClientBuilder.build();
@@ -22,5 +24,13 @@ public class AgentService implements IAgentService {
                 .call()
                 .content();
         return new AgentChatResp(reply);
+    }
+
+    @Override
+    public Flux<String> chatStream(AgentChatReq req) {
+        return chatClient.prompt()
+                .user(req.getMessage())
+                .stream()
+                .content();
     }
 }

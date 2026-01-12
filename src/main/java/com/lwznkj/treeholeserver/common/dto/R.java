@@ -1,4 +1,4 @@
-package com.lwznkj.treeholeserver.common.result;
+package com.lwznkj.treeholeserver.common.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

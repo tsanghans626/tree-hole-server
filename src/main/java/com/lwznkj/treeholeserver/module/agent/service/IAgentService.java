@@ -2,6 +2,7 @@ package com.lwznkj.treeholeserver.module.agent.service;
 
 import com.lwznkj.treeholeserver.module.agent.dto.AgentChatReq;
 import com.lwznkj.treeholeserver.module.agent.dto.AgentChatResp;
+import reactor.core.publisher.Flux;
 
 public interface IAgentService {
     /**
@@ -11,4 +12,12 @@ public interface IAgentService {
      * @return AI 回复
      */
     AgentChatResp chat(AgentChatReq req);
+
+    /**
+     * AI 流式对话接口
+     *
+     * @param req 对话请求
+     * @return AI 回复流
+     */
+    Flux<String> chatStream(AgentChatReq req);
 }

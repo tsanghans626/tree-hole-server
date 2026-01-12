@@ -1,13 +1,15 @@
 package com.lwznkj.treeholeserver.module.agent.controller;
 
-import com.lwznkj.treeholeserver.common.result.R;
+import com.lwznkj.treeholeserver.common.dto.R;
 import com.lwznkj.treeholeserver.module.agent.dto.AgentChatReq;
 import com.lwznkj.treeholeserver.module.agent.dto.AgentChatResp;
 import com.lwznkj.treeholeserver.module.agent.service.IAgentService;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 
 @RestController
 @RequestMapping("/api/v1/agents")
@@ -22,5 +24,10 @@ public class AgentController {
     @PostMapping("/chat")
     public R<AgentChatResp> chat(@RequestBody AgentChatReq req) {
         return R.ok(agentService.chat(req));
+    }
+
+    @PostMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> chatStream(@RequestBody AgentChatReq req) {
+        return agentService.chatStream(req);
     }
 }
