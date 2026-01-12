@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: "treeholeserver"
+  ai:
+    openai:
+      base-url: "https://api.hunyuan.cloud.tencent.com"
+      api-key: "sk-4fSNaSE9emCJhNS80uB6yoyDCz6ZIdIQ4dQPr2AL2nWxFmK2"
+      chat:
+        options:
+          model: "hunyuan-2.0-instruct-20251111"
+          temperature: 0.7
