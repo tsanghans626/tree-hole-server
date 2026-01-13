@@ -5,8 +5,11 @@ import com.lwznkj.treeholeserver.module.agents.dto.AgentChatResp;
 import com.lwznkj.treeholeserver.module.agents.entity.Persona;
 import com.lwznkj.treeholeserver.module.agents.service.IAgentService;
 import com.lwznkj.treeholeserver.module.agents.service.IPersonaService;
+import com.lwznkj.treeholeserver.module.auth.context.UserContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.stereotype.Service;
@@ -16,16 +19,39 @@ import reactor.core.publisher.Flux;
 @Service
 public class AgentService implements IAgentService {
 
-    private final ChatClient chatClient;
+    private final ChatClient.Builder chatClientBuilder;
     private final IPersonaService personaService;
+    private final ChatMemory chatMemory;
 
-    public AgentService(ChatClient.Builder chatClientBuilder, IPersonaService personaService) {
-        this.chatClient = chatClientBuilder.build();
+    public AgentService(
+            ChatClient.Builder chatClientBuilder,
+            IPersonaService personaService,
+            ChatMemory chatMemory) {
+        this.chatClientBuilder = chatClientBuilder;
         this.personaService = personaService;
+        this.chatMemory = chatMemory;
+    }
+
+    /**
+     * Build a ChatClient with memory advisor for a specific conversation.
+     *
+     * @param conversationId Unique identifier for the conversation
+     * @return Configured ChatClient with memory
+     */
+    private ChatClient buildChatClientWithMemory(String conversationId) {
+        return chatClientBuilder
+                .defaultAdvisors(
+                        MessageChatMemoryAdvisor.builder(chatMemory)
+                                .conversationId(conversationId)
+                                .build()
+                )
+                .build();
     }
 
     @Override
     public AgentChatResp chat(AgentChatReq req) {
+        String conversationId = generateConversationId(req);
+        ChatClient chatClient = buildChatClientWithMemory(conversationId);
         Persona persona = resolvePersona(req.getPersonaCode());
 
         var promptBuilder = chatClient.prompt();
@@ -50,6 +76,8 @@ public class AgentService implements IAgentService {
 
     @Override
     public Flux<String> chatStream(AgentChatReq req) {
+        String conversationId = generateConversationId(req);
+        ChatClient chatClient = buildChatClientWithMemory(conversationId);
         Persona persona = resolvePersona(req.getPersonaCode());
 
         var promptBuilder = chatClient.prompt();
@@ -95,5 +123,21 @@ public class AgentService implements IAgentService {
         }
 
         return optionsBuilder.build();
+    }
+
+    /**
+     * Generate a unique conversation ID based on current user and persona.
+     * This ensures each user-persona combination has a separate conversation history.
+     *
+     * @param req The chat request containing personaCode
+     * @return Unique conversation ID string in format: {userId}:{personaCode}
+     */
+    private String generateConversationId(AgentChatReq req) {
+        Long userId = UserContext.getCurrentUserId();
+        String personaCode = (req.getPersonaCode() != null && !req.getPersonaCode().isBlank())
+                ? req.getPersonaCode()
+                : "default";
+
+        return userId + ":" + personaCode;
     }
 }

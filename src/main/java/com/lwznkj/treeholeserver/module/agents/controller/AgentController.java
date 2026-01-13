@@ -26,9 +26,6 @@ public class AgentController {
 
     @PostMapping("/chat")
     public R<AgentChatResp> chat(@RequestBody AgentChatReq req) {
-        Long userId = UserContext.getCurrentUserId();
-        String username = UserContext.getCurrentUsername();
-        log.info("Chat request from user - userId: {}, username: {}", userId, username);
         return R.ok(agentService.chat(req));
     }
 

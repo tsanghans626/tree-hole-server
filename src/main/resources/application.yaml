@@ -3,6 +3,19 @@ spring:
     name: "treeholeserver"
   profiles:
     active: dev
+  ai:
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: always
+    openai:
+      base-url: "https://api.hunyuan.cloud.tencent.com"
+      api-key: "sk-4fSNaSE9emCJhNS80uB6yoyDCz6ZIdIQ4dQPr2AL2nWxFmK2"
+      chat:
+        options:
+          model: "hunyuan-2.0-instruct-20251111"
+          temperature: 0.7
   datasource:
     url: "jdbc:postgresql://localhost:5432/treehole"
     username: "treehole"
@@ -17,14 +30,6 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
-  ai:
-    openai:
-      base-url: "https://api.hunyuan.cloud.tencent.com"
-      api-key: "sk-4fSNaSE9emCJhNS80uB6yoyDCz6ZIdIQ4dQPr2AL2nWxFmK2"
-      chat:
-        options:
-          model: "hunyuan-2.0-instruct-20251111"
-          temperature: 0.7
   # Redis 配置
   data:
     redis:
