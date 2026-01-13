@@ -1,19 +1,19 @@
 package com.lwznkj.treeholeserver.module.agents.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lwznkj.treeholeserver.module.agents.dto.CreatePersonaReq;
 import com.lwznkj.treeholeserver.module.agents.dto.PersonaListResp;
 import com.lwznkj.treeholeserver.module.agents.dto.PersonaQueryReq;
 import com.lwznkj.treeholeserver.module.agents.dto.PersonaResp;
 import com.lwznkj.treeholeserver.module.agents.dto.UpdatePersonaReq;
 import com.lwznkj.treeholeserver.module.agents.entity.Persona;
-import com.lwznkj.treeholeserver.module.agents.repository.PersonaRepository;
+import com.lwznkj.treeholeserver.module.agents.mapper.PersonaMapper;
 import com.lwznkj.treeholeserver.module.agents.service.IPersonaService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,28 +24,38 @@ import java.util.stream.Collectors;
 @Service
 public class PersonaService implements IPersonaService {
 
-    private final PersonaRepository personaRepository;
+    private final PersonaMapper personaMapper;
 
     private static final Persona DEFAULT_PERSONA = createDefaultPersona();
 
-    public PersonaService(PersonaRepository personaRepository) {
-        this.personaRepository = personaRepository;
+    public PersonaService(PersonaMapper personaMapper) {
+        this.personaMapper = personaMapper;
     }
 
     @Override
     @Cacheable(value = "persona", key = "#code", unless = "#result == null")
     public Persona getByCode(String code) {
         log.debug("Fetching persona by code: {}", code);
-        return personaRepository.findByCodeAndIsActiveTrue(code)
-                .orElse(getDefaultPersona());
+        LambdaQueryWrapper<Persona> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Persona::getCode, code)
+               .eq(Persona::getIsActive, true)
+               .last("LIMIT 1");
+
+        Persona result = personaMapper.selectOne(wrapper);
+        return result != null ? result : getDefaultPersona();
     }
 
     @Override
     @Cacheable(value = "personaDefault", unless = "#result == null")
     public Persona getDefaultPersona() {
         log.debug("Fetching default persona");
-        return personaRepository.findFirstByIsActiveTrueOrderByCreatedAtDesc()
-                .orElse(DEFAULT_PERSONA);
+        LambdaQueryWrapper<Persona> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Persona::getIsActive, true)
+               .orderByDesc(Persona::getCreatedAt)
+               .last("LIMIT 1");
+
+        Persona result = personaMapper.selectOne(wrapper);
+        return result != null ? result : DEFAULT_PERSONA;
     }
 
     @Override
@@ -65,9 +75,14 @@ public class PersonaService implements IPersonaService {
     @CacheEvict(value = {"persona", "personaDefault"}, allEntries = true)
     public Persona create(CreatePersonaReq req) {
         log.info("Creating persona with code: {}", req.getCode());
-        if (personaRepository.findByCode(req.getCode()).isPresent()) {
+
+        // Check if code already exists
+        LambdaQueryWrapper<Persona> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Persona::getCode, req.getCode());
+        if (personaMapper.selectCount(wrapper) > 0) {
             throw new IllegalArgumentException("Persona with code '" + req.getCode() + "' already exists");
         }
+
         Persona persona = new Persona();
         persona.setCode(req.getCode());
         persona.setName(req.getName());
@@ -78,7 +93,9 @@ public class PersonaService implements IPersonaService {
         persona.setCategory(req.getCategory());
         persona.setVersion(req.getVersion());
         persona.setIsActive(true);
-        return personaRepository.save(persona);
+
+        personaMapper.insert(persona);
+        return persona;
     }
 
     @Override
@@ -86,8 +103,12 @@ public class PersonaService implements IPersonaService {
     @CacheEvict(value = {"persona", "personaDefault"}, allEntries = true)
     public Persona update(Long id, UpdatePersonaReq req) {
         log.info("Updating persona with id: {}", id);
-        Persona persona = personaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Persona not found with id: " + id));
+
+        Persona persona = personaMapper.selectById(id);
+        if (persona == null) {
+            throw new IllegalArgumentException("Persona not found with id: " + id);
+        }
+
         if (req.getName() != null) {
             persona.setName(req.getName());
         }
@@ -112,40 +133,50 @@ public class PersonaService implements IPersonaService {
         if (req.getIsActive() != null) {
             persona.setIsActive(req.getIsActive());
         }
-        return personaRepository.save(persona);
+
+        personaMapper.updateById(persona);
+        return persona;
     }
 
     @Override
     public Persona getById(Long id) {
-        return personaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Persona not found with id: " + id));
+        Persona persona = personaMapper.selectById(id);
+        if (persona == null) {
+            throw new IllegalArgumentException("Persona not found with id: " + id);
+        }
+        return persona;
     }
 
     @Override
     public PersonaListResp list(PersonaQueryReq req) {
         int page = req.getPage() != null ? req.getPage() : 0;
         int size = req.getSize() != null ? req.getSize() : 10;
-        Pageable pageable = PageRequest.of(page, size);
 
-        Page<Persona> personaPage;
-        if (req.getIsActive() != null && req.getCategory() != null) {
-            personaPage = personaRepository.findByIsActiveAndCategory(req.getIsActive(), req.getCategory(), pageable);
-        } else if (req.getIsActive() != null) {
-            personaPage = personaRepository.findByIsActive(req.getIsActive(), pageable);
-        } else if (req.getCategory() != null) {
-            personaPage = personaRepository.findByCategory(req.getCategory(), pageable);
-        } else {
-            personaPage = personaRepository.findAll(pageable);
+        // Note: MyBatis Plus page starts from 1, but JPA starts from 0
+        Page<Persona> pageParam = new Page<>(page + 1, size);
+
+        LambdaQueryWrapper<Persona> wrapper = new LambdaQueryWrapper<>();
+
+        if (req.getIsActive() != null) {
+            wrapper.eq(Persona::getIsActive, req.getIsActive());
+        }
+        if (req.getCategory() != null) {
+            wrapper.eq(Persona::getCategory, req.getCategory());
         }
 
-        List<PersonaResp> content = personaPage.getContent().stream()
+        // Always order by created_at desc for consistency
+        wrapper.orderByDesc(Persona::getCreatedAt);
+
+        IPage<Persona> personaPage = personaMapper.selectPage(pageParam, wrapper);
+
+        List<PersonaResp> content = personaPage.getRecords().stream()
                 .map(this::toResp)
                 .collect(Collectors.toList());
 
         return new PersonaListResp(
                 content,
-                personaPage.getTotalElements(),
-                personaPage.getTotalPages(),
+                personaPage.getTotal(),
+                (int) personaPage.getPages(),
                 page,
                 size
         );
@@ -156,10 +187,14 @@ public class PersonaService implements IPersonaService {
     @CacheEvict(value = {"persona", "personaDefault"}, allEntries = true)
     public void delete(Long id) {
         log.info("Soft deleting persona with id: {}", id);
-        Persona persona = personaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Persona not found with id: " + id));
+
+        Persona persona = personaMapper.selectById(id);
+        if (persona == null) {
+            throw new IllegalArgumentException("Persona not found with id: " + id);
+        }
+
         persona.setIsActive(false);
-        personaRepository.save(persona);
+        personaMapper.updateById(persona);
     }
 
     private PersonaResp toResp(Persona persona) {

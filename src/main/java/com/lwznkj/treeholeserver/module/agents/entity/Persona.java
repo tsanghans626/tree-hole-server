@@ -1,53 +1,47 @@
 package com.lwznkj.treeholeserver.module.agents.entity;
 
-import jakarta.persistence.*;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "personas")
 @Data
+@TableName("personas")
 public class Persona {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @Column(unique = true, nullable = false, length = 50)
+    @TableField(value = "code")
     private String code;
 
-    @Column(nullable = false, length = 100)
+    @TableField(value = "name")
     private String name;
 
-    @Column(length = 500)
+    @TableField(value = "description")
     private String description;
 
-    @Column(name = "system_prompt", columnDefinition = "TEXT")
+    @TableField(value = "system_prompt")
     private String systemPrompt;
 
-    @Column
+    @TableField(value = "temperature")
     private Double temperature;
 
-    @Column(name = "max_tokens")
+    @TableField(value = "max_tokens")
     private Integer maxTokens;
 
-    @Column(length = 50)
+    @TableField(value = "category")
     private String category;
 
-    @Column
+    @TableField(value = "version")
     private String version;
 
-    @Column(name = "is_active")
+    @TableField(value = "is_active")
     private Boolean isActive = true;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @TableField(value = "created_at", fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
-    @Column(name = "updated_at")
+    @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 }
