@@ -1,5 +1,8 @@
 package com.lwznkj.treeholeserver.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.cache.CacheManager;
@@ -25,9 +28,15 @@ public class RedisConfiguration {
 
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        var objectMapper = JsonMapper.builder()
-                .addModule(new JavaTimeModule())
+        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
+                .allowIfBaseType(Object.class)
                 .build();
+
+        var objectMapper = JsonMapper.builder()
+                .polymorphicTypeValidator(ptv)
+                .addModule(new JavaTimeModule())
+                .build()
+                .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
 
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(30))
