@@ -38,9 +38,9 @@
 
 		<!-- MyBatis Plus -->
 		<dependency>
-			<groupId>com.baomidou</groupId>
-			<artifactId>mybatis-plus-spring-boot3-starter</artifactId>
-			<version>3.5.9</version>
+			<groupId>com.tangzc</groupId>
+			<artifactId>mybatis-plus-ext-spring-boot3-starter</artifactId>
+			<version>3.5.9-EXT727</version>
 		</dependency>
 		<dependency>
 			<groupId>com.baomidou</groupId>
