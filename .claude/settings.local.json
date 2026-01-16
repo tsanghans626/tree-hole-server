@@ -14,7 +14,8 @@
       "Bash(unzip:*)",
       "Bash(\"D:\\Code\\tree-hole-server\\mvnw.cmd\" compile -U)",
       "Bash(ls:*)",
-      "Bash(chat_memory \")"
+      "Bash(chat_memory \")",
+      "Bash(mvn:*)"
     ]
   }
 }

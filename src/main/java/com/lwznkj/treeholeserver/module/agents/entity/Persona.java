@@ -5,7 +5,7 @@ import com.tangzc.autotable.annotation.ColumnType;
 import com.tangzc.autotable.annotation.pgsql.PgsqlTypeConstant;
 import com.tangzc.mpe.autotable.annotation.*;
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.tangzc.mpe.base.entity.BaseLogicEntity;
+import com.tangzc.mpe.base.entity.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Table("personas")
-public class Persona extends BaseLogicEntity<Long, LocalDateTime> {
+public class Persona extends BaseEntity<Long, LocalDateTime> {
 
     @ColumnId(value = "id", mode = IdType.AUTO)
     private Long id;

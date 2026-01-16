@@ -37,9 +37,4 @@ tencent:
 
 auto-table:
   mode: update
-
-super-admin:
-  username: admin
-  password: admin123
-  name: 超级管理员
   

@@ -26,8 +26,6 @@ public class PersonaService implements IPersonaService {
 
     private final PersonaMapper PersonaMapper;
 
-    private static final Persona DEFAULT_PERSONA = createDefaultPersona();
-
     public PersonaService(PersonaMapper PersonaMapper) {
         this.PersonaMapper = PersonaMapper;
     }
@@ -37,9 +35,7 @@ public class PersonaService implements IPersonaService {
     public Persona getByCode(String code) {
         log.debug("Fetching persona by code: {}", code);
         LambdaQueryWrapper<Persona> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Persona::getCode, code)
-               .eq(Persona::getIsActive, true)
-               .last("LIMIT 1");
+        wrapper.eq(Persona::getCode, code).eq(Persona::getIsActive, true).last("LIMIT 1");
 
         Persona result = PersonaMapper.selectOne(wrapper);
         return result != null ? result : getDefaultPersona();
@@ -50,12 +46,9 @@ public class PersonaService implements IPersonaService {
     public Persona getDefaultPersona() {
         log.debug("Fetching default persona");
         LambdaQueryWrapper<Persona> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Persona::getIsActive, true)
-               .orderByDesc(Persona::getCreateTime)
-               .last("LIMIT 1");
+        wrapper.eq(Persona::getIsActive, true).eq(Persona::getCode, "default").last("LIMIT 1");
 
-        Persona result = PersonaMapper.selectOne(wrapper);
-        return result != null ? result : DEFAULT_PERSONA;
+        return PersonaMapper.selectOne(wrapper);
     }
 
     @Override
@@ -169,17 +162,9 @@ public class PersonaService implements IPersonaService {
 
         IPage<Persona> personaPage = PersonaMapper.selectPage(pageParam, wrapper);
 
-        List<PersonaAdminResp> content = personaPage.getRecords().stream()
-                .map(this::toResp)
-                .collect(Collectors.toList());
+        List<PersonaAdminResp> content = personaPage.getRecords().stream().map(PersonaAdminResp::fromEntity).collect(Collectors.toList());
 
-        return new PersonaListResp(
-                content,
-                personaPage.getTotal(),
-                (int) personaPage.getPages(),
-                page,
-                size
-        );
+        return new PersonaListResp(content, personaPage.getTotal(), (int) personaPage.getPages(), page, size);
     }
 
     @Override
@@ -197,35 +182,4 @@ public class PersonaService implements IPersonaService {
         PersonaMapper.updateById(persona);
     }
 
-    private PersonaAdminResp toResp(Persona persona) {
-        return new PersonaAdminResp(
-                persona.getId(),
-                persona.getCode(),
-                persona.getName(),
-                persona.getDescription(),
-                persona.getSystemPrompt(),
-                persona.getTemperature(),
-                persona.getMaxTokens(),
-                persona.getCategory(),
-                persona.getVersion(),
-                persona.getIsActive(),
-                persona.getCreateTime(),
-                persona.getCreateBy(),
-                persona.getUpdateTime(),
-                persona.getUpdateBy()
-        );
-    }
-
-    private static Persona createDefaultPersona() {
-        Persona persona = new Persona();
-        persona.setId(0L);
-        persona.setCode("default");
-        persona.setName("Default Assistant");
-        persona.setDescription("Default AI assistant persona");
-        persona.setSystemPrompt("You are a friendly and professional AI assistant named \"Tree Hole\". You are good at listening and providing warm support and advice.");
-        persona.setTemperature(0.7);
-        persona.setMaxTokens(2000);
-        persona.setIsActive(true);
-        return persona;
-    }
 }
