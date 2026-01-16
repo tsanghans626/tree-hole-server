@@ -25,4 +25,12 @@ public class User extends BaseLogicEntity<Long, LocalDateTime> {
     @ColumnComment("昵称")
     @Column(value = "name")
     private String name;
+
+    @ColumnComment("密码（BCrypt加密）")
+    @Column(value = "password")
+    private String password;
+
+    @ColumnComment("是否超管")
+    @Column(value = "is_super_admin", defaultValue = "false")
+    private Boolean isSuperAdmin;
 }
