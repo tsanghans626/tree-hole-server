@@ -4,32 +4,18 @@ spring:
   profiles:
     active: dev
   ai:
-    chat:
-      memory:
-        repository:
-          jdbc:
-            initialize-schema: always
     openai:
       base-url: "https://api.hunyuan.cloud.tencent.com"
-      api-key: "sk-4fSNaSE9emCJhNS80uB6yoyDCz6ZIdIQ4dQPr2AL2nWxFmK2"
       chat:
         options:
           model: "hunyuan-2.0-instruct-20251111"
           temperature: 0.7
   datasource:
-    url: "jdbc:postgresql://localhost:5432/treehole"
-    username: "treehole"
-    password: "qwer1234"
     driver-class-name: org.postgresql.Driver
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
+
   # Redis 配置
   data:
     redis:
-      host: localhost
-      port: 6379
-      database: 0
       timeout: 5s
       lettuce:
         pool:
@@ -55,10 +41,6 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: auto
-
-jwt:
-  secret: "tree-hole-server-secret-key-change-in-production-256bits"
-  expiration: 86400000  # 24 hours (in milliseconds)
 
 # Authentication white list configuration
 auth:

@@ -4,9 +4,10 @@ import com.lwznkj.treeholeserver.common.dto.R;
 import com.lwznkj.treeholeserver.module.agents.dto.CreatePersonaReq;
 import com.lwznkj.treeholeserver.module.agents.dto.PersonaListResp;
 import com.lwznkj.treeholeserver.module.agents.dto.PersonaQueryReq;
-import com.lwznkj.treeholeserver.module.agents.dto.PersonaResp;
+import com.lwznkj.treeholeserver.module.agents.dto.PersonaAdminResp;
 import com.lwznkj.treeholeserver.module.agents.dto.UpdatePersonaReq;
 import com.lwznkj.treeholeserver.module.agents.entity.Persona;
+import com.lwznkj.treeholeserver.module.agents.mapper.PersonaMapper;
 import com.lwznkj.treeholeserver.module.agents.service.IPersonaService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -30,38 +31,38 @@ public class PersonaController {
      * 创建人设
      */
     @PostMapping
-    public R<PersonaResp> create(@Valid @RequestBody CreatePersonaReq req) {
+    public R<PersonaAdminResp> create(@Valid @RequestBody CreatePersonaReq req) {
         log.info("Creating persona with code: {}", req.getCode());
         Persona persona = personaService.create(req);
-        return R.ok(toResp(persona));
+        return R.ok(PersonaAdminResp.fromEntity(persona));
     }
 
     /**
      * 更新人设
      */
     @PutMapping("/{id}")
-    public R<PersonaResp> update(@PathVariable Long id, @Valid @RequestBody UpdatePersonaReq req) {
+    public R<PersonaAdminResp> update(@PathVariable Long id, @Valid @RequestBody UpdatePersonaReq req) {
         log.info("Updating persona with id: {}", id);
         Persona persona = personaService.update(id, req);
-        return R.ok(toResp(persona));
+        return R.ok(PersonaAdminResp.fromEntity(persona));
     }
 
     /**
      * 根据ID查询人设
      */
     @GetMapping("/{id}")
-    public R<PersonaResp> getById(@PathVariable Long id) {
+    public R<PersonaAdminResp> getById(@PathVariable Long id) {
         Persona persona = personaService.getById(id);
-        return R.ok(toResp(persona));
+        return R.ok(PersonaAdminResp.fromEntity(persona));
     }
 
     /**
      * 根据code查询人设
      */
     @GetMapping("/code/{code}")
-    public R<PersonaResp> getByCode(@PathVariable String code) {
+    public R<PersonaAdminResp> getByCode(@PathVariable String code) {
         Persona persona = personaService.getByCode(code);
-        return R.ok(toResp(persona));
+        return R.ok(PersonaAdminResp.fromEntity(persona));
     }
 
     /**
@@ -97,20 +98,4 @@ public class PersonaController {
         return R.ok();
     }
 
-    private PersonaResp toResp(Persona persona) {
-        return new PersonaResp(
-                persona.getId(),
-                persona.getCode(),
-                persona.getName(),
-                persona.getDescription(),
-                persona.getSystemPrompt(),
-                persona.getTemperature(),
-                persona.getMaxTokens(),
-                persona.getCategory(),
-                persona.getVersion(),
-                persona.getIsActive(),
-                persona.getCreatedAt(),
-                persona.getUpdatedAt()
-        );
-    }
 }

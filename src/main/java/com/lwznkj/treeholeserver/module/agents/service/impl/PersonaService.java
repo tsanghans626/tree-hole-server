@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lwznkj.treeholeserver.module.agents.dto.CreatePersonaReq;
 import com.lwznkj.treeholeserver.module.agents.dto.PersonaListResp;
 import com.lwznkj.treeholeserver.module.agents.dto.PersonaQueryReq;
-import com.lwznkj.treeholeserver.module.agents.dto.PersonaResp;
+import com.lwznkj.treeholeserver.module.agents.dto.PersonaAdminResp;
 import com.lwznkj.treeholeserver.module.agents.dto.UpdatePersonaReq;
 import com.lwznkj.treeholeserver.module.agents.entity.Persona;
 import com.lwznkj.treeholeserver.module.agents.mapper.PersonaMapper;
@@ -24,12 +24,12 @@ import java.util.stream.Collectors;
 @Service
 public class PersonaService implements IPersonaService {
 
-    private final PersonaMapper personaMapper;
+    private final PersonaMapper PersonaMapper;
 
     private static final Persona DEFAULT_PERSONA = createDefaultPersona();
 
-    public PersonaService(PersonaMapper personaMapper) {
-        this.personaMapper = personaMapper;
+    public PersonaService(PersonaMapper PersonaMapper) {
+        this.PersonaMapper = PersonaMapper;
     }
 
     @Override
@@ -41,7 +41,7 @@ public class PersonaService implements IPersonaService {
                .eq(Persona::getIsActive, true)
                .last("LIMIT 1");
 
-        Persona result = personaMapper.selectOne(wrapper);
+        Persona result = PersonaMapper.selectOne(wrapper);
         return result != null ? result : getDefaultPersona();
     }
 
@@ -51,10 +51,10 @@ public class PersonaService implements IPersonaService {
         log.debug("Fetching default persona");
         LambdaQueryWrapper<Persona> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Persona::getIsActive, true)
-               .orderByDesc(Persona::getCreatedAt)
+               .orderByDesc(Persona::getCreateTime)
                .last("LIMIT 1");
 
-        Persona result = personaMapper.selectOne(wrapper);
+        Persona result = PersonaMapper.selectOne(wrapper);
         return result != null ? result : DEFAULT_PERSONA;
     }
 
@@ -79,7 +79,7 @@ public class PersonaService implements IPersonaService {
         // Check if code already exists
         LambdaQueryWrapper<Persona> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Persona::getCode, req.getCode());
-        if (personaMapper.selectCount(wrapper) > 0) {
+        if (PersonaMapper.selectCount(wrapper) > 0) {
             throw new IllegalArgumentException("Persona with code '" + req.getCode() + "' already exists");
         }
 
@@ -94,7 +94,7 @@ public class PersonaService implements IPersonaService {
         persona.setVersion(req.getVersion());
         persona.setIsActive(true);
 
-        personaMapper.insert(persona);
+        PersonaMapper.insert(persona);
         return persona;
     }
 
@@ -104,7 +104,7 @@ public class PersonaService implements IPersonaService {
     public Persona update(Long id, UpdatePersonaReq req) {
         log.info("Updating persona with id: {}", id);
 
-        Persona persona = personaMapper.selectById(id);
+        Persona persona = PersonaMapper.selectById(id);
         if (persona == null) {
             throw new IllegalArgumentException("Persona not found with id: " + id);
         }
@@ -134,13 +134,13 @@ public class PersonaService implements IPersonaService {
             persona.setIsActive(req.getIsActive());
         }
 
-        personaMapper.updateById(persona);
+        PersonaMapper.updateById(persona);
         return persona;
     }
 
     @Override
     public Persona getById(Long id) {
-        Persona persona = personaMapper.selectById(id);
+        Persona persona = PersonaMapper.selectById(id);
         if (persona == null) {
             throw new IllegalArgumentException("Persona not found with id: " + id);
         }
@@ -165,11 +165,11 @@ public class PersonaService implements IPersonaService {
         }
 
         // Always order by created_at desc for consistency
-        wrapper.orderByDesc(Persona::getCreatedAt);
+        wrapper.orderByDesc(Persona::getCreateTime);
 
-        IPage<Persona> personaPage = personaMapper.selectPage(pageParam, wrapper);
+        IPage<Persona> personaPage = PersonaMapper.selectPage(pageParam, wrapper);
 
-        List<PersonaResp> content = personaPage.getRecords().stream()
+        List<PersonaAdminResp> content = personaPage.getRecords().stream()
                 .map(this::toResp)
                 .collect(Collectors.toList());
 
@@ -188,17 +188,17 @@ public class PersonaService implements IPersonaService {
     public void delete(Long id) {
         log.info("Soft deleting persona with id: {}", id);
 
-        Persona persona = personaMapper.selectById(id);
+        Persona persona = PersonaMapper.selectById(id);
         if (persona == null) {
             throw new IllegalArgumentException("Persona not found with id: " + id);
         }
 
         persona.setIsActive(false);
-        personaMapper.updateById(persona);
+        PersonaMapper.updateById(persona);
     }
 
-    private PersonaResp toResp(Persona persona) {
-        return new PersonaResp(
+    private PersonaAdminResp toResp(Persona persona) {
+        return new PersonaAdminResp(
                 persona.getId(),
                 persona.getCode(),
                 persona.getName(),
@@ -209,8 +209,10 @@ public class PersonaService implements IPersonaService {
                 persona.getCategory(),
                 persona.getVersion(),
                 persona.getIsActive(),
-                persona.getCreatedAt(),
-                persona.getUpdatedAt()
+                persona.getCreateTime(),
+                persona.getCreateBy(),
+                persona.getUpdateTime(),
+                persona.getUpdateBy()
         );
     }
 

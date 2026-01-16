@@ -11,7 +11,8 @@
       "mcp__web-search-prime__webSearchPrime",
       "Bash(\"D:\\Code\\tree-hole-server\\mvnw.cmd\":*)",
       "Bash(\"D:\\Code\\tree-hole-server\\mvnw.cmd\" compile -U -q)",
-      "Bash(unzip:*)"
+      "Bash(unzip:*)",
+      "Bash(\"D:\\Code\\tree-hole-server\\mvnw.cmd\" compile -U)"
     ]
   }
 }

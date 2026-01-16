@@ -1,19 +1,40 @@
 spring:
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+  ai:
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: always
+    openai:
+      api-key: "sk-4fSNaSE9emCJhNS80uB6yoyDCz6ZIdIQ4dQPr2AL2nWxFmK2"
+
+  datasource:
+    url: "jdbc:postgresql://localhost:5432/treehole"
+    username: "treehole"
+    password: "qwer1234"
   flyway:
     enabled: false
-
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
 logging:
   level:
     root: INFO
     com.lwznkj.treeholeserver: DEBUG
     org.springframework.web: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+jwt:
+  secret: "tree-hole-server-secret-key-change-in-production-256bits"
+  expiration: 31536000000  # 365d (in milliseconds)
+
+tencent:
+  cloud:
+    secret-id: "AKIDrb8ZqxufDnLpHds0zoSwEKDvSnvqZ5PW"
+    secret-key: "xgCVezNZbJs5WwCG9sRpEUaegaM1YyKm"
+    region: ap-guangzhou
+
+auto-table:
+  mode: update
+  

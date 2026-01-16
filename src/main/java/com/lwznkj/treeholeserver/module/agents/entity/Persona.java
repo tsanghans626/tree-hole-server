@@ -1,47 +1,58 @@
 package com.lwznkj.treeholeserver.module.agents.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.tangzc.autotable.annotation.ColumnComment;
+import com.tangzc.autotable.annotation.ColumnType;
+import com.tangzc.autotable.annotation.pgsql.PgsqlTypeConstant;
+import com.tangzc.mpe.autotable.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.tangzc.mpe.base.entity.BaseLogicEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("personas")
-public class Persona {
+@Table("personas")
+public class Persona extends BaseLogicEntity<Long, LocalDateTime> {
 
-    @TableId(value = "id", type = IdType.AUTO)
+    @ColumnId(value = "id", mode = IdType.AUTO)
     private Long id;
 
-    @TableField(value = "code")
+    @ColumnComment("标识")
+    @Column(value = "code")
     private String code;
 
-    @TableField(value = "name")
+    @ColumnComment("名称")
+    @Column(value = "name")
     private String name;
 
-    @TableField(value = "description")
+    @ColumnComment("描述")
+    @Column(value = "description", length = 500)
     private String description;
 
-    @TableField(value = "system_prompt")
+    @ColumnComment("系统提示词")
+    @ColumnType(PgsqlTypeConstant.TEXT)
+    @Column(value = "system_prompt")
     private String systemPrompt;
 
-    @TableField(value = "temperature")
+    @ColumnComment("温度")
+    @Column(value = "temperature")
     private Double temperature;
 
-    @TableField(value = "max_tokens")
+    @ColumnComment("最大token限制")
+    @Column(value = "max_tokens")
     private Integer maxTokens;
 
-    @TableField(value = "category")
+    @ColumnComment("分类")
+    @Column(value = "category")
     private String category;
 
-    @TableField(value = "version")
+    @ColumnComment("版本")
+    @Column(value = "version")
     private String version;
 
-    @TableField(value = "is_active")
+    @ColumnComment("是否启用")
+    @Column(value = "is_active")
     private Boolean isActive = true;
-
-    @TableField(value = "created_at", fill = FieldFill.INSERT)
-    private LocalDateTime createdAt;
-
-    @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updatedAt;
 }

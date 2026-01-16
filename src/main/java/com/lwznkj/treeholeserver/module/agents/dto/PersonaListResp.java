@@ -17,7 +17,7 @@ public class PersonaListResp {
     /**
      * 人设列表
      */
-    private List<PersonaResp> content;
+    private List<PersonaAdminResp> content;
 
     /**
      * 总记录数

@@ -1,6 +1,7 @@
 package com.lwznkj.treeholeserver.module.agents.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.lwznkj.treeholeserver.module.agents.dto.PersonaAdminResp;
 import com.lwznkj.treeholeserver.module.agents.entity.Persona;
 import org.apache.ibatis.annotations.Mapper;
 

@@ -1,20 +1,28 @@
 package com.lwznkj.treeholeserver.module.users.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.tangzc.autotable.annotation.ColumnComment;
+import com.tangzc.mpe.autotable.annotation.*;
+
+import com.tangzc.mpe.base.entity.BaseLogicEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("users")
-public class User {
+@Table("users")
+public class User extends BaseLogicEntity<Long, LocalDateTime> {
 
-    @TableId(value = "id", type = IdType.AUTO)
+    @ColumnId(value = "id", mode = IdType.AUTO)
     private Long id;
 
-    @TableField("username")
+    @ColumnComment("用户名")
+    @Column(value = "username")
     private String username;
 
-    @TableField(value = "created_at", fill = FieldFill.INSERT)
-    private LocalDateTime createdAt;
+    @ColumnComment("昵称")
+    @Column(value = "name")
+    private String name;
 }

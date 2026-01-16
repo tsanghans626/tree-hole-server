@@ -1,8 +1,10 @@
 package com.lwznkj.treeholeserver.module.agents.dto;
 
+import com.lwznkj.treeholeserver.module.agents.entity.Persona;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.beans.BeanUtils;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +14,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PersonaResp {
+public class PersonaAdminResp {
 
     /**
      * 主键ID
@@ -67,10 +69,27 @@ public class PersonaResp {
     /**
      * 创建时间
      */
-    private LocalDateTime createdAt;
+    private LocalDateTime createTime;
 
     /**
-     * 更新时间
+     * 创建人
      */
-    private LocalDateTime updatedAt;
+    private Long createBy;
+
+    /**
+     * 最后更新时间
+     */
+    private LocalDateTime updateTime;
+
+    /**
+     * 最后更新人
+     */
+    private Long updateBy;
+
+    public static PersonaAdminResp fromEntity(Persona persona) {
+        if (persona == null) return null;
+        PersonaAdminResp resp = new PersonaAdminResp();
+        BeanUtils.copyProperties(persona, resp);
+        return resp;
+    }
 }
