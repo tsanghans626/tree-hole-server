@@ -11,6 +11,9 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.VectorStoreChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
+
+import static org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID;
+
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.stereotype.Service;
@@ -20,52 +23,17 @@ import reactor.core.publisher.Flux;
 @Service
 public class AgentService implements IAgentService {
 
-    private final ChatClient.Builder chatClientBuilder;
+    private final ChatClient chatClient;
     private final IPersonaService personaService;
-    private final ChatMemory chatMemory;
-    private final VectorStoreChatMemoryAdvisor vectorStoreChatMemoryAdvisor;
 
-    public AgentService(
-            ChatClient.Builder chatClientBuilder,
-            IPersonaService personaService,
-            ChatMemory chatMemory,
-            VectorStoreChatMemoryAdvisor vectorStoreChatMemoryAdvisor) {
-        this.chatClientBuilder = chatClientBuilder;
+    public AgentService(ChatClient.Builder chatClientBuilder, IPersonaService personaService, ChatMemory chatMemory, VectorStoreChatMemoryAdvisor vectorStoreChatMemoryAdvisor) {
         this.personaService = personaService;
-        this.chatMemory = chatMemory;
-        this.vectorStoreChatMemoryAdvisor = vectorStoreChatMemoryAdvisor;
-    }
-
-    /**
-     * Build a ChatClient with dual memory advisors for a specific conversation.
-     *
-     * <p>The ChatClient is configured with two advisors:
-     * <ul>
-     *   <li><b>MessageChatMemoryAdvisor</b>: Provides recent conversation context (short-term memory)</li>
-     *   <li><b>VectorStoreChatMemoryAdvisor</b>: Provides semantically relevant historical context (long-term memory)</li>
-     * </ul>
-     *
-     * @param conversationId Unique identifier for the conversation
-     * @return Configured ChatClient with both memory advisors
-     */
-    private ChatClient buildChatClientWithMemory(String conversationId) {
-        return chatClientBuilder
-                .defaultAdvisors(
-                        // Short-term memory: Recent messages from JDBC store
-                        MessageChatMemoryAdvisor.builder(chatMemory)
-                                .conversationId(conversationId)
-                                .build(),
-                        // Long-term memory: Semantic search across conversation history
-                        // Note: VectorStoreChatMemoryAdvisor will use the conversationId from ChatClient's context
-                        vectorStoreChatMemoryAdvisor
-                )
-                .build();
+        this.chatClient = chatClientBuilder.defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build(), vectorStoreChatMemoryAdvisor).build();
     }
 
     @Override
     public AgentChatResp chat(AgentChatReq req) {
         String conversationId = generateConversationId(req);
-        ChatClient chatClient = buildChatClientWithMemory(conversationId);
         Persona persona = resolvePersona(req.getPersonaCode());
 
         var promptBuilder = chatClient.prompt();
@@ -84,14 +52,13 @@ public class AgentService implements IAgentService {
             promptBuilder.options(options);
         }
 
-        String reply = promptBuilder.call().content();
+        String reply = promptBuilder.advisors(a -> a.param(CONVERSATION_ID, conversationId)).call().content();
         return new AgentChatResp(reply);
     }
 
     @Override
     public Flux<String> chatStream(AgentChatReq req) {
         String conversationId = generateConversationId(req);
-        ChatClient chatClient = buildChatClientWithMemory(conversationId);
         Persona persona = resolvePersona(req.getPersonaCode());
 
         var promptBuilder = chatClient.prompt();
@@ -110,7 +77,7 @@ public class AgentService implements IAgentService {
             promptBuilder.options(options);
         }
 
-        return promptBuilder.stream().content();
+        return promptBuilder.advisors(a -> a.param(CONVERSATION_ID, conversationId)).stream().content();
     }
 
     /**
@@ -148,9 +115,7 @@ public class AgentService implements IAgentService {
      */
     private String generateConversationId(AgentChatReq req) {
         Long userId = UserContext.getCurrentUserId();
-        String personaCode = (req.getPersonaCode() != null && !req.getPersonaCode().isBlank())
-                ? req.getPersonaCode()
-                : "default";
+        String personaCode = (req.getPersonaCode() != null && !req.getPersonaCode().isBlank()) ? req.getPersonaCode() : "default";
 
         return userId + ":" + personaCode;
     }
